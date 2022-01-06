@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactTooltip from 'react-tooltip';
 import CanadaMap from './components/CanadaMap';
+import './App.css';
 
 function App() {
   const [stats, setStats] = useState("");
@@ -15,7 +16,7 @@ function App() {
 
   return (
     <div className="App">
-      <header><center>Canada Covid Tracker</center></header>
+      <header className="App-header">Canada Covid Tracker</header>
         <CanadaMap setTooltipContent={handleStats}/>
         <ReactTooltip type="dark">{stats}</ReactTooltip>
     </div>

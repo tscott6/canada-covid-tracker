@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo } from 'react';
 import axios from 'axios';
-import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps';
+import { ComposableMap, Geographies, Geography, Marker, Annotation } from 'react-simple-maps';
 import { geoCentroid } from 'd3-geo';
 import canada from '../data/canada.json';
 
@@ -26,6 +26,7 @@ const CanadaMap = ({setTooltipContent}) => {
             });
     };
 
+    // topoJSON provinces are not in alphabetical order, must match them individually to fetched province Covid data
     const setProvinceCaseCounts = () => {
         mapData.canada.objects.provinces.geometries[0].properties.caseNumber = covidData.summary[0].cases; //Alberta
         mapData.canada.objects.provinces.geometries[0].properties.activeCases = covidData.summary[0].active_cases;
@@ -80,6 +81,7 @@ const CanadaMap = ({setTooltipContent}) => {
         mapData.canada.objects.provinces.geometries[12].properties.deaths = covidData.summary[10].cumulative_deaths;
     };
 
+    // Calculate and return centroid coordinates of province for positioning daily reported cases text
     const centroid = (prov) => {
         var coords = geoCentroid(prov);
 
@@ -98,6 +100,7 @@ const CanadaMap = ({setTooltipContent}) => {
         return coords;
     };
 
+    // Set colour of province based on number of daily reported cases
     const setCaseColour = (prov) => {
         var count = prov.properties.caseNumber;
 
@@ -116,6 +119,7 @@ const CanadaMap = ({setTooltipContent}) => {
         }
     };
 
+    // Once Covid data is fetched, add data to topoJSON and render map
     if(covidData.length !== 0) {
         setProvinceCaseCounts();
 
@@ -143,7 +147,7 @@ const CanadaMap = ({setTooltipContent}) => {
                                    geography={geo}
                                    style={{
                                        hover: {
-                                           filter: "brightness(120%)"
+                                           filter: "brightness(110%)"
                                        }    
                                    }}
                                    onMouseEnter={() => {
@@ -159,13 +163,48 @@ const CanadaMap = ({setTooltipContent}) => {
                         ))}
     
                         {geographies.map(geo => {
-                            return (
-                                <Marker key={geo.rsmKey} coordinates={centroid(geo)} fill="black">
-                                    <text fontSize="6px" textAnchor="middle">
-                                        {geo.properties.caseNumber}
-                                    </text>
-                                </Marker>
-                            );
+                            if(geo.properties.NAME === "Prince Edward Island" || geo.properties.NAME === "Nova Scotia") {
+                                return (
+                                    <Annotation key={geo.rsmKey} 
+                                                subject={centroid(geo)} 
+                                                dx={10} 
+                                                dy={10}
+                                                connectorProps={{
+                                                    stroke: "#000000",
+                                                    strokeWidth: 1,
+                                                    strokeLinecap: "round"
+                                                }}>
+                                        <text fontSize="6px" textAnchor="end" x="12" y="2">
+                                            {geo.properties.caseNumber}
+                                        </text>
+                                    </Annotation>
+                                );
+                            }
+                            else if(geo.properties.NAME === "New Brunswick") {
+                                return (
+                                    <Annotation key={geo.rsmKey} 
+                                                subject={centroid(geo)} 
+                                                dx={10}
+                                                connectorProps={{
+                                                    stroke: "#000000",
+                                                    strokeWidth: 1,
+                                                    strokeLinecap: "round"
+                                                }}>
+                                        <text fontSize="6px" textAnchor="end" x="12" y="2">
+                                            {geo.properties.caseNumber}
+                                        </text>
+                                    </Annotation>
+                                );
+                            }
+                            else {
+                                return (
+                                    <Marker key={geo.rsmKey} coordinates={centroid(geo)} fill="black">
+                                        <text fontSize="6px" textAnchor="middle">
+                                            {geo.properties.caseNumber}
+                                        </text>
+                                    </Marker>
+                                );
+                            }
                         })}
                         </>
                     )}
@@ -173,6 +212,7 @@ const CanadaMap = ({setTooltipContent}) => {
             </ComposableMap>
         );
     }
+    // If Covid data not yet fetched, render Loading message
     else {
         return (
             <div><center>Loading</center></div>
