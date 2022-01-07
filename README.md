@@ -1,6 +1,6 @@
 ## Canada Covid Tracker
 
-A simple app visually displaying COVID-19 daily reported cases and active cases/cumulative deaths for Canada.
+A simple React app visually displaying COVID-19 daily reported cases and active cases/cumulative deaths for Canada.
 
 <img src="tracker-01.jpg" alt="Overview" width="600"/>
 
